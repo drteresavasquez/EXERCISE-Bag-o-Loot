@@ -1,9 +1,11 @@
 require 'child'
 require 'support/string_extend'
+require 'yaml'
+
 class Lootbag
     
     class Config
-        @@actions = ["list", "remove", "add", "find", "quit"]
+        @@actions = ["list", "removeitem", "removekid", "add", "find", "quit"]
         def self.actions; @@actions; end
     end
 
@@ -52,9 +54,12 @@ class Lootbag
         case action
         when 'list'
             list
-        when 'remove'
+        when 'removeitem'
             # keyword = args.shift
-            remove
+            remove_item
+        when 'removekid'
+            # keyword = args.shift
+            remove_kid
         when 'add'
             add
         when 'quit'
@@ -63,12 +68,12 @@ class Lootbag
             keyword = args.shift
             find(keyword)
         else
-            puts "I don't understant that command"
+            puts "I don't understand that command"
         end
       end
 
-      def remove
-        output_action_header("Delete a Kid")
+      def remove_item
+        output_action_header("Delete a Toy")
         args = {}
         print "What is the Toy? "
         args[:toy] = gets.chomp.upcase.strip
@@ -78,13 +83,60 @@ class Lootbag
 
         if args
             childlootbag = ChildLootBags.saved_lootbags
-            found = childlootbag.select do |bags|
+            #.reject
+            found = childlootbag.reject do |bags|
                 bags.toy.downcase.include?(args[:toy].downcase) && 
                 bags.child.downcase.include?(args[:child].downcase) 
             end
 
-            puts "No lootbags found with #{args[:toy]} going to #{args[:child]}" if found.empty?
-            puts "Trying to Delete #{args[:toy]} from #{args[:child]}." unless found.empty?
+            found2 = childlootbag.select do |bags|
+                bags.child.downcase.include?(args[:child].downcase) 
+            end
+
+            f2 = File.open('lootbags.txt', 'w+')
+            f2.close
+            for item in found
+                File.open('lootbags.txt', 'a') do |file|
+                    file.puts "#{[item.toy, item.child].join("\t")}\n"
+                end
+            end
+        
+            puts "Removed #{args[:child]}'s #{args[:toy]} from the lootbag" unless found2.empty?
+            
+            puts "No child or toy found...try again (HINT: type 'list' to view lootbag list)" if found2.empty?
+        end
+      end
+
+      def remove_kid
+        output_action_header("Delete a Kid")
+        args = {}
+        
+        print "Name of the child? "
+        args[:child] = gets.chomp.upcase.strip
+
+        if args
+            childlootbag = ChildLootBags.saved_lootbags
+            #.reject
+            found = childlootbag.reject do |bags|
+                bags.child.downcase.include?(args[:child].downcase) 
+            end
+
+            found2 = childlootbag.select do |bags|
+                bags.child.downcase.include?(args[:child].downcase) 
+            end
+
+            f2 = File.open('lootbags.txt', 'w+')
+            f2.close
+            for item in found
+                File.open('lootbags.txt', 'a') do |file|
+                    file.puts "#{[item.toy, item.child].join("\t")}\n"
+                end
+            end
+
+            puts "Removed #{args[:child]} from the lootbag list because they were naughty!" unless found2.empty?
+
+            puts "No child found...try again (HINT: type 'list' to view lootbag list)" if found2.empty?
+
         end
       end
 
