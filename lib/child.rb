@@ -11,7 +11,7 @@ class ChildLootBags
       attr_accessor :toy, :child
 
       def self.file_exists?
-        # class should know if the restaurant file exists
+        # class should know if the lootbag file exists
         if @@filepath && File.exists?(@@filepath)
             return true
         else
@@ -28,7 +28,7 @@ class ChildLootBags
       end
 
       def self.create_file
-        # create the restaurant file
+        # create the lootbag file
         File.open(@@filepath, 'w') unless file_exists?
         return file_useable?
       end
